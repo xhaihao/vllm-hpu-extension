@@ -201,6 +201,7 @@ def flat_pa(
 
     attn = matmul_qk_op(query, key) + block_bias
     if alibi_slopes is not None:
+        alibi_slopes = alibi_slopes[:, :, -attn.size(3):, -attn.size(3):]
         block_alibi_slopes = process_alibi_biases(alibi_slopes, block_list, block_size, batch_size, kv_heads)
         attn.add_(block_alibi_slopes)
     attn = block_softmax(batch_size, attn, block_mapping, block_scales, block_groups)
