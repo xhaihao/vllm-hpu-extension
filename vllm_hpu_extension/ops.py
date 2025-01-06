@@ -142,14 +142,18 @@ def flat_pa(
     key = key.transpose(-2, -1)
 
     attn = matmul_qk_op(query, key)
+    attn_orig_dtype = None
     if position_bias is not None:
         if attn.dtype != position_bias.dtype:
+            attn_orig_dtype = attn.dtype
             attn = attn.to(dtype=position_bias.dtype)
         attn.add_(position_bias.unsqueeze(-2))
     if block_bias is not None:
         if attn.dtype != block_bias.dtype:
             block_bias = block_bias.to(dtype=attn.dtype)
         attn.add_(block_bias)
+    if attn_orig_dtype is not None:
+        attn = attn.to(dtype=attn_orig_dtype)
 
     if attn.dtype != block_mapping.dtype:
         block_mapping = block_mapping.to(dtype=attn.dtype)
@@ -225,8 +229,10 @@ def prompt_attention(
         key = key.transpose(-2, -1)
         attn_weights = matmul_qk_op(query * scale, key)
 
+        attn_weights_orig_dtype = None
         if position_bias is not None:
             if attn_weights.dtype != position_bias.dtype:
+                attn_weights_orig_dtype = attn_weights.dtype
                 attn_weights = attn_weights.to(dtype=position_bias.dtype)
             attn_weights.add_(position_bias)
             if position_bias_offset is not None:
@@ -235,6 +241,8 @@ def prompt_attention(
             if attn_weights.dtype != attn_bias.dtype:
                 attn_bias = attn_bias.to(dtype=attn_weights.dtype)
             attn_weights.add_(attn_bias)
+        if attn_weights_orig_dtype is not None:
+            attn_weights = attn_weights.to(dtype=attn_weights_orig_dtype)
 
         attn_weights = softmax_op(attn_weights, dim=-1)
         if attn_weights.dtype != value.dtype:
