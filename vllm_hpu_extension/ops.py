@@ -235,8 +235,8 @@ def prompt_attention(
                 attn_weights_orig_dtype = attn_weights.dtype
                 attn_weights = attn_weights.to(dtype=position_bias.dtype)
             attn_weights.add_(position_bias)
-            if position_bias_offset is not None:
-                attn_weights.add_(position_bias_offset.unsqueeze(-1).unsqueeze(-1))
+            # if position_bias_offset is not None:
+            #    attn_weights.add_(position_bias_offset.unsqueeze(-1).unsqueeze(-1))
         if attn_bias is not None:
             if attn_weights.dtype != attn_bias.dtype:
                 attn_bias = attn_bias.to(dtype=attn_weights.dtype)
